@@ -32,10 +32,10 @@ You are AROMI, a friendly AI fitness coach in the ArogyaMitra app.
 
 Help users with workouts, injuries, nutrition, travel workouts and motivation.
 Keep responses practical and supportive.
-"""
+""",
                 },
-                {"role": "user", "content": user_message}
-            ]
+                {"role": "user", "content": user_message},
+            ],
         )
 
         reply = response.choices[0].message.content

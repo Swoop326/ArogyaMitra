@@ -11,7 +11,8 @@ from models.user import User
 
 router = APIRouter()
 
-import os 
+import os
+
 SECRET_KEY = os.getenv("JWT_SECRET")
 ALGORITHM = "HS256"
 
@@ -56,14 +57,10 @@ def create_token(data: dict):
 
 
 # Get current user
-def get_current_user(
-    token=Depends(security),
-    db: Session = Depends(get_db)
-):
+def get_current_user(token=Depends(security), db: Session = Depends(get_db)):
 
     credentials_exception = HTTPException(
-        status_code=401,
-        detail="Invalid authentication credentials"
+        status_code=401, detail="Invalid authentication credentials"
     )
 
     try:
@@ -78,11 +75,7 @@ def get_current_user(
         if user is None:
             raise credentials_exception
 
-        return {
-            "id": user.id,
-            "name": user.name,
-            "email": user.email
-        }
+        return {"id": user.id, "name": user.name, "email": user.email}
 
     except JWTError:
         raise credentials_exception
@@ -104,7 +97,7 @@ def register(user: UserRegister, db: Session = Depends(get_db)):
         email=user.email,
         password=hashed,
         age=user.age,
-        gender=user.gender
+        gender=user.gender,
     )
 
     db.add(new_user)
@@ -128,7 +121,4 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     # CREATE TOKEN HERE
     token = create_token({"sub": db_user.email})
 
-    return {
-        "access_token": token,
-        "token_type": "bearer"
-    }
+    return {"access_token": token, "token_type": "bearer"}

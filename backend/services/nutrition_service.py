@@ -8,7 +8,9 @@ load_dotenv()
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 
-def generate_nutrition_plan(calories, diet, allergies, health_profile=None, body_metrics=None):
+def generate_nutrition_plan(
+    calories, diet, allergies, health_profile=None, body_metrics=None
+):
 
     health_context = ""
 
@@ -74,8 +76,8 @@ Format exactly like this:
         model="llama-3.3-70b-versatile",
         messages=[
             {"role": "system", "content": "You are a professional nutritionist."},
-            {"role": "user", "content": prompt}
-        ]
+            {"role": "user", "content": prompt},
+        ],
     )
 
     text = response.choices[0].message.content.strip()
@@ -85,8 +87,4 @@ Format exactly like this:
     try:
         return json.loads(text)
     except Exception as e:
-        return {
-            "error": "AI response parsing failed",
-            "details": str(e),
-            "raw": text
-        }
+        return {"error": "AI response parsing failed", "details": str(e), "raw": text}

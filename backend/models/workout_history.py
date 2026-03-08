@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, DateTime, ForeignKey
 from datetime import datetime
 from config.database import Base
 
+
 class WorkoutHistory(Base):
 
     __tablename__ = "workout_history"
