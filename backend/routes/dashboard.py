@@ -20,15 +20,12 @@ def get_db():
 
 @router.get("/dashboard")
 def get_dashboard(
-    current_user=Depends(get_current_user),
-    db: Session = Depends(get_db)
+    current_user=Depends(get_current_user), db: Session = Depends(get_db)
 ):
 
     user_id = current_user["id"]
 
-    workouts = db.query(WorkoutHistory).filter(
-        WorkoutHistory.user_id == user_id
-    ).all()
+    workouts = db.query(WorkoutHistory).filter(WorkoutHistory.user_id == user_id).all()
 
     if not workouts:
         return {
@@ -48,7 +45,7 @@ def get_dashboard(
                 {"day": "Fri", "value": 0},
                 {"day": "Sat", "value": 0},
                 {"day": "Sun", "value": 0},
-            ]
+            ],
         }
 
     # TOTAL CALORIES
@@ -64,15 +61,7 @@ def get_dashboard(
     # WEEKLY ACTIVITY
     # ---------------------------
 
-    weekly = {
-        "Mon": 0,
-        "Tue": 0,
-        "Wed": 0,
-        "Thu": 0,
-        "Fri": 0,
-        "Sat": 0,
-        "Sun": 0
-    }
+    weekly = {"Mon": 0, "Tue": 0, "Wed": 0, "Thu": 0, "Fri": 0, "Sat": 0, "Sun": 0}
 
     for w in workouts:
 
@@ -85,10 +74,7 @@ def get_dashboard(
 
     for day, count in weekly.items():
 
-        weekly_activity.append({
-            "day": day,
-            "value": count
-        })
+        weekly_activity.append({"day": day, "value": count})
 
     # ---------------------------
     # STREAK CALCULATION
@@ -101,11 +87,15 @@ def get_dashboard(
 
         check_day = today - timedelta(days=i)
 
-        exists = db.query(WorkoutHistory).filter(
-            WorkoutHistory.user_id == user_id,
-            WorkoutHistory.completed_at >= check_day,
-            WorkoutHistory.completed_at < check_day + timedelta(days=1)
-        ).first()
+        exists = (
+            db.query(WorkoutHistory)
+            .filter(
+                WorkoutHistory.user_id == user_id,
+                WorkoutHistory.completed_at >= check_day,
+                WorkoutHistory.completed_at < check_day + timedelta(days=1),
+            )
+            .first()
+        )
 
         if exists:
             streak += 1
@@ -116,9 +106,12 @@ def get_dashboard(
     # WEIGHT PROGRESS
     # ---------------------------
 
-    weights = db.query(BodyMetrics).filter(
-        BodyMetrics.user_id == user_id
-    ).order_by(BodyMetrics.created_at).all()
+    weights = (
+        db.query(BodyMetrics)
+        .filter(BodyMetrics.user_id == user_id)
+        .order_by(BodyMetrics.created_at)
+        .all()
+    )
 
     weight_progress = 0
 
@@ -134,5 +127,5 @@ def get_dashboard(
         "weightProgress": weight_progress,
         "cardioProgress": len(workouts) * 5,
         "strengthProgress": len(workouts) * 5,
-        "weeklyActivity": weekly_activity
+        "weeklyActivity": weekly_activity,
     }

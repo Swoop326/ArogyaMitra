@@ -70,13 +70,10 @@ Rules:
         messages=[
             {
                 "role": "system",
-                "content": "You are a professional fitness trainer. Return ONLY JSON."
+                "content": "You are a professional fitness trainer. Return ONLY JSON.",
             },
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
+            {"role": "user", "content": prompt},
+        ],
     )
 
     text = response.choices[0].message.content

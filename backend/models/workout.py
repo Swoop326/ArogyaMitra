@@ -3,7 +3,6 @@ from sqlalchemy.orm import relationship
 from config.database import Base
 
 
-
 class WorkoutPlan(Base):
     __tablename__ = "workout_plans"
 

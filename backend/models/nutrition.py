@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 from config.database import Base
 
+
 class NutritionPlan(Base):
     __tablename__ = "nutrition_plans"
 

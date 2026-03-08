@@ -29,11 +29,7 @@ def find_recipe(meal_name: str):
 
     url = "https://api.spoonacular.com/recipes/complexSearch"
 
-    params = {
-        "query": simplified,
-        "number": 1,
-        "apiKey": SPOONACULAR_API_KEY
-    }
+    params = {"query": simplified, "number": 1, "apiKey": SPOONACULAR_API_KEY}
 
     try:
 
@@ -63,10 +59,7 @@ def find_recipe(meal_name: str):
         if not image:
             image = f"https://img.spoonacular.com/recipes/{recipe_id}-312x231.jpg"
 
-        return {
-            "recipe_id": recipe_id,
-            "image": image
-        }
+        return {"recipe_id": recipe_id, "image": image}
 
     except Exception as e:
 
@@ -80,11 +73,7 @@ def find_recipe(meal_name: str):
 @router.post("/plan")
 def generate_plan(data: NutritionRequest):
 
-    result = generate_nutrition_plan(
-        data.calories,
-        data.diet,
-        data.allergies
-    )
+    result = generate_nutrition_plan(data.calories, data.diet, data.allergies)
 
     weekly = result.get("weeklyPlan", [])
 
@@ -104,29 +93,35 @@ def generate_plan(data: NutritionRequest):
 
                 if recipe:
 
-                    enriched_meals.append({
-                        "name": meal,
-                        "recipe_id": recipe["recipe_id"],
-                        "image": recipe["image"]
-                    })
+                    enriched_meals.append(
+                        {
+                            "name": meal,
+                            "recipe_id": recipe["recipe_id"],
+                            "image": recipe["image"],
+                        }
+                    )
 
                     print(f"Mapped: {meal} -> {recipe['recipe_id']}")
 
                 else:
 
-                    enriched_meals.append({
-                        "name": meal,
-                        "recipe_id": None,
-                        "image": "https://placehold.co/300x200?text=Food"
-                    })
+                    enriched_meals.append(
+                        {
+                            "name": meal,
+                            "recipe_id": None,
+                            "image": "https://placehold.co/300x200?text=Food",
+                        }
+                    )
 
             else:
                 # skip API call for other days
-                enriched_meals.append({
-                    "name": meal,
-                    "recipe_id": None,
-                    "image": "https://placehold.co/300x200?text=Food"
-                })
+                enriched_meals.append(
+                    {
+                        "name": meal,
+                        "recipe_id": None,
+                        "image": "https://placehold.co/300x200?text=Food",
+                    }
+                )
 
         day["meals"] = enriched_meals
 
@@ -143,10 +138,7 @@ def get_recipes(diet: str = "vegetarian"):
 
     url = "https://api.spoonacular.com/recipes/random"
 
-    params = {
-        "number": 6,
-        "apiKey": SPOONACULAR_API_KEY
-    }
+    params = {"number": 6, "apiKey": SPOONACULAR_API_KEY}
 
     if diet == "vegetarian":
         params["tags"] = "vegetarian"
@@ -176,22 +168,21 @@ def get_recipes(diet: str = "vegetarian"):
             if not image:
                 image = f"https://img.spoonacular.com/recipes/{recipe_id}-312x231.jpg"
 
-            recipes.append({
-                "id": recipe_id,
-                "title": r.get("title"),
-                "image": image,
-                "readyInMinutes": r.get("readyInMinutes"),
-                "servings": r.get("servings")
-            })
+            recipes.append(
+                {
+                    "id": recipe_id,
+                    "title": r.get("title"),
+                    "image": image,
+                    "readyInMinutes": r.get("readyInMinutes"),
+                    "servings": r.get("servings"),
+                }
+            )
 
         return recipes
 
     except Exception as e:
 
-        return {
-            "error": "Failed to fetch recipes",
-            "details": str(e)
-        }
+        return {"error": "Failed to fetch recipes", "details": str(e)}
 
 
 # -----------------------------
@@ -204,10 +195,7 @@ def get_recipe_details(recipe_id: int):
 
         url = f"https://api.spoonacular.com/recipes/{recipe_id}/information"
 
-        params = {
-            "apiKey": SPOONACULAR_API_KEY,
-            "includeNutrition": True
-        }
+        params = {"apiKey": SPOONACULAR_API_KEY, "includeNutrition": True}
 
         res = requests.get(url, params=params)
 
@@ -224,9 +212,7 @@ def get_recipe_details(recipe_id: int):
             "servings": data.get("servings"),
             "summary": data.get("summary"),
             "instructions": data.get("instructions"),
-            "ingredients": [
-                i["original"] for i in data.get("extendedIngredients", [])
-            ]
+            "ingredients": [i["original"] for i in data.get("extendedIngredients", [])],
         }
 
     except Exception as e:

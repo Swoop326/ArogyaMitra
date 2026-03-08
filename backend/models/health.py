@@ -3,6 +3,7 @@ import random
 
 router = APIRouter()
 
+
 # Health check route
 @router.get("/")
 def health_check():
@@ -13,7 +14,7 @@ def health_check():
 @router.get("/dashboard")
 def dashboard():
 
-    weekly = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+    weekly = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
     return {
         "calories": random.randint(1800, 2600),
@@ -24,7 +25,5 @@ def dashboard():
         "weightProgress": random.randint(40, 90),
         "cardioProgress": random.randint(40, 90),
         "strengthProgress": random.randint(40, 90),
-        "weeklyActivity": [
-            {"day": d, "value": random.randint(10, 80)} for d in weekly
-        ]
+        "weeklyActivity": [{"day": d, "value": random.randint(10, 80)} for d in weekly],
     }

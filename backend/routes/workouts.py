@@ -42,7 +42,7 @@ def get_youtube_video(exercise_name: str):
         "q": f"{exercise_name} exercise tutorial",
         "key": YOUTUBE_API_KEY,
         "maxResults": 1,
-        "type": "video"
+        "type": "video",
     }
 
     try:
@@ -65,7 +65,7 @@ def get_youtube_video(exercise_name: str):
 def generate_plan(
     data: WorkoutRequest,
     current_user=Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
 
     user_id = current_user["id"]
@@ -79,11 +79,7 @@ def generate_plan(
     plan = generate_workout_plan(goal, level, days)
 
     workout = WorkoutPlan(
-        user_id=user_id,
-        goal=goal,
-        level=level,
-        days=days,
-        plan_json=json.dumps(plan)
+        user_id=user_id, goal=goal, level=level, days=days, plan_json=json.dumps(plan)
     )
 
     db.add(workout)
@@ -97,16 +93,17 @@ def generate_plan(
 # -----------------------------
 @router.get("/day/{day}")
 def get_workout_day(
-    day: int,
-    current_user=Depends(get_current_user),
-    db: Session = Depends(get_db)
+    day: int, current_user=Depends(get_current_user), db: Session = Depends(get_db)
 ):
 
     user_id = current_user["id"]
 
-    workout = db.query(WorkoutPlan).filter(
-        WorkoutPlan.user_id == user_id
-    ).order_by(WorkoutPlan.id.desc()).first()
+    workout = (
+        db.query(WorkoutPlan)
+        .filter(WorkoutPlan.user_id == user_id)
+        .order_by(WorkoutPlan.id.desc())
+        .first()
+    )
 
     if not workout:
         return {"error": "No workout plan found"}
@@ -130,14 +127,17 @@ def get_single_exercise(
     day: int,
     exercise_index: int,
     current_user=Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
 
     user_id = current_user["id"]
 
-    workout = db.query(WorkoutPlan).filter(
-        WorkoutPlan.user_id == user_id
-    ).order_by(WorkoutPlan.id.desc()).first()
+    workout = (
+        db.query(WorkoutPlan)
+        .filter(WorkoutPlan.user_id == user_id)
+        .order_by(WorkoutPlan.id.desc())
+        .first()
+    )
 
     if not workout:
         return {"error": "No workout plan"}
@@ -177,33 +177,32 @@ def get_single_exercise(
 # -----------------------------
 @router.post("/complete-day/{day}")
 def complete_day(
-    day: int,
-    current_user=Depends(get_current_user),
-    db: Session = Depends(get_db)
+    day: int, current_user=Depends(get_current_user), db: Session = Depends(get_db)
 ):
 
     user_id = current_user["id"]
 
-    workout = db.query(WorkoutPlan).filter(
-        WorkoutPlan.user_id == user_id
-    ).order_by(WorkoutPlan.id.desc()).first()
+    workout = (
+        db.query(WorkoutPlan)
+        .filter(WorkoutPlan.user_id == user_id)
+        .order_by(WorkoutPlan.id.desc())
+        .first()
+    )
 
     if not workout:
         return {"error": "No workout plan found"}
 
-    existing = db.query(WorkoutHistory).filter(
-        WorkoutHistory.workout_id == workout.id,
-        WorkoutHistory.day == day
-    ).first()
+    existing = (
+        db.query(WorkoutHistory)
+        .filter(WorkoutHistory.workout_id == workout.id, WorkoutHistory.day == day)
+        .first()
+    )
 
     if existing:
         return {"message": f"Day {day} already completed"}
 
     history = WorkoutHistory(
-        user_id=user_id,
-        workout_id=workout.id,
-        day=day,
-        calories=100
+        user_id=user_id, workout_id=workout.id, day=day, calories=100
     )
 
     db.add(history)
@@ -218,22 +217,24 @@ def complete_day(
 # -----------------------------
 @router.get("/today")
 def get_today_workout(
-    current_user=Depends(get_current_user),
-    db: Session = Depends(get_db)
+    current_user=Depends(get_current_user), db: Session = Depends(get_db)
 ):
 
     user_id = current_user["id"]
 
-    workout = db.query(WorkoutPlan).filter(
-        WorkoutPlan.user_id == user_id
-    ).order_by(WorkoutPlan.id.desc()).first()
+    workout = (
+        db.query(WorkoutPlan)
+        .filter(WorkoutPlan.user_id == user_id)
+        .order_by(WorkoutPlan.id.desc())
+        .first()
+    )
 
     if not workout:
         return {"error": "No workout plan generated"}
 
-    completed_days = db.query(WorkoutHistory).filter(
-        WorkoutHistory.workout_id == workout.id
-    ).all()
+    completed_days = (
+        db.query(WorkoutHistory).filter(WorkoutHistory.workout_id == workout.id).all()
+    )
 
     completed_count = len(completed_days)
 
@@ -241,11 +242,6 @@ def get_today_workout(
 
     if next_day > workout.days:
 
-        return {
-            "status": "finished",
-            "message": "Workout plan completed"
-        }
+        return {"status": "finished", "message": "Workout plan completed"}
 
-    return {
-        "day": next_day
-    }
+    return {"day": next_day}

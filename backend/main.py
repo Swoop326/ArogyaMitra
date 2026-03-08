@@ -32,9 +32,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 def root():
     return {"message": "ArogyaMitra API Running 🚀"}
+
 
 app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
 app.include_router(workout_router, prefix="/api/workouts", tags=["Workouts"])

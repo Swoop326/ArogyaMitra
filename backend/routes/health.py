@@ -20,17 +20,13 @@ def get_db():
 # -----------------------------
 @router.post("/assessment")
 def save_health_assessment(
-    data: dict,
-    current_user=Depends(get_current_user),
-    db: Session = Depends(get_db)
+    data: dict, current_user=Depends(get_current_user), db: Session = Depends(get_db)
 ):
 
     user_id = current_user["id"]
 
     # Check if profile already exists
-    profile = db.query(HealthProfile).filter(
-        HealthProfile.user_id == user_id
-    ).first()
+    profile = db.query(HealthProfile).filter(HealthProfile.user_id == user_id).first()
 
     # If not, create new profile
     if not profile:
@@ -64,13 +60,14 @@ def save_health_assessment(
 # -----------------------------
 @router.get("/profile")
 def check_health_profile(
-    current_user=Depends(get_current_user),
-    db: Session = Depends(get_db)
+    current_user=Depends(get_current_user), db: Session = Depends(get_db)
 ):
 
-    profile = db.query(HealthProfile).filter(
-        HealthProfile.user_id == current_user["id"]
-    ).first()
+    profile = (
+        db.query(HealthProfile)
+        .filter(HealthProfile.user_id == current_user["id"])
+        .first()
+    )
 
     if not profile:
         return {"profile_completed": False}
@@ -88,10 +85,7 @@ def debug_profiles(db: Session = Depends(get_db)):
 
     return {
         "count": len(profiles),
-        "profiles": [
-            {"id": p.id, "user_id": p.user_id}
-            for p in profiles
-        ]
+        "profiles": [{"id": p.id, "user_id": p.user_id} for p in profiles],
     }
 
 
