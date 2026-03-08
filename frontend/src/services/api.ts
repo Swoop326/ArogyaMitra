@@ -1,6 +1,6 @@
 import axios from "axios"
 
-const API_BASE = "https://1560-103-97-104-149.ngrok-free.app"
+const API_BASE = "http://localhost:5173"
 
 /* ---------------- GLOBAL AXIOS INSTANCE ---------------- */
 

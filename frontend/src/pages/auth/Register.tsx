@@ -21,7 +21,7 @@ function Register() {
     try{
 
       await axios.post(
-        "https://1560-103-97-104-149.ngrok-free.app/api/auth/register",
+        "http://localhost:5173/api/auth/register",
         {
           name,
           email,
