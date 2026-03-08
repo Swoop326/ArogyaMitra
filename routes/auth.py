@@ -1,70 +1,132 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from fastapi.security import HTTPBearer
 from pydantic import BaseModel
-from passlib.context import CryptContext
-from jose import jwt
+from jose import jwt, JWTError
 from datetime import datetime, timedelta
+from sqlalchemy.orm import Session
+import hashlib
+
+from config.database import SessionLocal
+from models.user import User
 
 router = APIRouter()
 
-SECRET_KEY = "arogyamitra-secret"
+import os 
+SECRET_KEY = os.getenv("JWT_SECRET")
 ALGORITHM = "HS256"
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+security = HTTPBearer()
 
-fake_users_db = {}
 
 class UserRegister(BaseModel):
-    username: str
+    name: str
+    email: str
+    password: str
+    age: int
+    gender: str
+
+
+class UserLogin(BaseModel):
     email: str
     password: str
 
-class UserLogin(BaseModel):
-    username: str
-    password: str
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
+# Password hashing
 def hash_password(password: str):
-    return pwd_context.hash(password)
+    return hashlib.sha256(password.encode()).hexdigest()
 
 
 def verify_password(plain, hashed):
-    return pwd_context.verify(plain, hashed)
+    return hashlib.sha256(plain.encode()).hexdigest() == hashed
 
 
+# Create JWT
 def create_token(data: dict):
     expire = datetime.utcnow() + timedelta(hours=2)
     data.update({"exp": expire})
     return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
 
 
+# Get current user
+def get_current_user(
+    token=Depends(security),
+    db: Session = Depends(get_db)
+):
+
+    credentials_exception = HTTPException(
+        status_code=401,
+        detail="Invalid authentication credentials"
+    )
+
+    try:
+        payload = jwt.decode(token.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+
+        if email is None:
+            raise credentials_exception
+
+        user = db.query(User).filter(User.email == email).first()
+
+        if user is None:
+            raise credentials_exception
+
+        return {
+            "id": user.id,
+            "name": user.name,
+            "email": user.email
+        }
+
+    except JWTError:
+        raise credentials_exception
+
+
+# Register
 @router.post("/register")
-def register(user: UserRegister):
-    if user.username in fake_users_db:
+def register(user: UserRegister, db: Session = Depends(get_db)):
+
+    existing = db.query(User).filter(User.email == user.email).first()
+
+    if existing:
         raise HTTPException(status_code=400, detail="User already exists")
 
     hashed = hash_password(user.password)
 
-    fake_users_db[user.username] = {
-        "username": user.username,
-        "email": user.email,
-        "password": hashed
-    }
+    new_user = User(
+        name=user.name,
+        email=user.email,
+        password=hashed,
+        age=user.age,
+        gender=user.gender
+    )
+
+    db.add(new_user)
+    db.commit()
 
     return {"message": "User registered successfully"}
 
 
+# Login
 @router.post("/login")
-def login(user: UserLogin):
+def login(user: UserLogin, db: Session = Depends(get_db)):
 
-    db_user = fake_users_db.get(user.username)
+    db_user = db.query(User).filter(User.email == user.email).first()
 
     if not db_user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    if not verify_password(user.password, db_user["password"]):
+    if not verify_password(user.password, db_user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    token = create_token({"sub": user.username})
+    # CREATE TOKEN HERE
+    token = create_token({"sub": db_user.email})
 
     return {
         "access_token": token,
